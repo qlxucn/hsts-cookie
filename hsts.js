@@ -1,11 +1,20 @@
 "use strict";
+function debug(msg) {
+    let tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+    let localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+    console.log("["+localISOTime + "] " + msg);    
+}
+
+debug("Start.");
+
 /*jslint browser: true, regexp: true*/
 var hsts = {
     token: null,
     tokenHex: null,
     tokenBin: null,
     tokenArray: [],
-    hostname: '[HOSTNAME]',
+    // hostname: '[HOSTNAME]',
+    hostname: 'searchiq.co/api/css',
     doTest: true,
     i: 0,
 
@@ -26,7 +35,7 @@ var hsts = {
         var i = 0,
             b = null,
             fullhost = null;
-        console.log("First visit. Dropping tokens.");
+        debug("First visit. Dropping tokens.");
         // request the test token as https so we can test whether their
         // next visit is a return - we will read the tokens on their next visit
         hsts.doTest = false;
@@ -46,7 +55,7 @@ var hsts = {
         var i = 0,
             padded = null,
             url = null;
-        console.log("Return visit. Retrieving tokens.");
+        debug("Return visit. Retrieving tokens.");
         // drop 24 tokens as http so we can determine which were redirected
         for (i = 0; i < 24; i += 1) {
             padded = (i < 10 ? "0" + i : i);
@@ -56,7 +65,7 @@ var hsts = {
     },
 
     parseTokenArray: function () {
-        console.log("Parsing token array.");
+        debug("Parsing token array.");
         hsts.tokenBin = hsts.tokenArray.join('');
         hsts.token = parseInt(hsts.tokenBin, 2);
         hsts.tokenHex = hsts.token.toString(16);
@@ -64,9 +73,7 @@ var hsts = {
     },
 
     printTokens: function () {
-        console.log(hsts.tokenBin);
-        console.log(hsts.tokenBin);
-        console.log(hsts.tokenHex);
+        debug('decimal='+hsts.token+', bin='+hsts.tokenBin+', hex='+hsts.tokenHex);
     },
 
     httpGet: function (url) {
@@ -101,6 +108,7 @@ var hsts = {
                     for (i = 0; i < 24; i += 1) {
                         if (hsts.tokenArray[i] === undefined) {
                             doParse = false;
+                            break;
                         }
                     }
                     if (doParse) {
